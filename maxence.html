@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>1000 jours avec Maxence 🎉</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300;1,600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --or:      #D4A017;
+  --or-l:    #FFF8E7;
+  --or-m:    #F0C040;
+  --brun:    #2C1810;
+  --brun-m:  #5C3317;
+  --creme:   #FFFDF5;
+  --texte:   #2C1810;
+}
+
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+}
+
+body {
+  background: var(--brun);
+  font-family: 'Jost', sans-serif;
+  display: flex; align-items: center; justify-content: center;
+  min-height: 100vh;
+  position: relative;
+}
+
+canvas#confetti {
+  position: fixed; inset: 0;
+  pointer-events: none; z-index: 0;
+  opacity: 0; transition: opacity 1s;
+}
+
+.bg-orbs {
+  position: fixed; inset: 0; z-index: 0;
+  overflow: hidden;
+}
+.orb {
+  position: absolute; border-radius: 50%;
+  filter: blur(80px); animation: drift 18s ease-in-out infinite alternate;
+}
+.orb1 { width: 500px; height: 500px; background: rgba(212,160,23,0.20); top: -100px; left: -100px; }
+.orb2 { width: 400px; height: 400px; background: rgba(92,51,23,0.30); bottom: -80px; right: -80px; animation-delay: 4s; }
+.orb3 { width: 300px; height: 300px; background: rgba(212,160,23,0.15); top: 40%; left: 50%; animation-delay: 8s; }
+
+@keyframes drift {
+  from { transform: translate(0, 0) scale(1); }
+  to   { transform: translate(40px, 30px) scale(1.1); }
+}
+
+/* ── PAGES ── */
+.page {
+  position: fixed; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: opacity 0.8s ease, transform 0.8s ease;
+  z-index: 10;
+}
+.page.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(30px);
+}
+
+/* ── CARTE ── */
+.card {
+  background: var(--creme);
+  border-radius: 24px;
+  padding: 40px 36px;
+  max-width: 480px;
+  width: calc(100% - 40px);
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(212,160,23,0.3);
+  position: relative;
+  z-index: 1;
+}
+
+.card-photo {
+  width: 100%;
+  max-height: 320px;
+  object-fit: cover;
+  object-position: center top;
+  border-radius: 14px;
+  margin-bottom: 24px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+}
+
+.badge {
+  display: inline-block;
+  background: linear-gradient(135deg, var(--or), var(--or-m));
+  color: var(--brun);
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 6px 18px;
+  border-radius: 20px;
+  margin-bottom: 18px;
+}
+
+.card h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(2rem, 6vw, 2.8rem);
+  font-weight: 600;
+  color: var(--brun);
+  line-height: 1.15;
+  margin-bottom: 12px;
+}
+
+.card h1 em {
+  font-style: italic;
+  color: var(--brun-m);
+}
+
+.card p {
+  font-size: 0.95rem;
+  color: #5a4030;
+  line-height: 1.7;
+  margin-bottom: 28px;
+}
+
+/* ── BOUTON ── */
+.btn-surprise {
+  background: linear-gradient(135deg, var(--brun-m) 0%, var(--brun) 100%);
+  color: var(--or-l);
+  border: none;
+  border-radius: 50px;
+  padding: 16px 40px;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.3rem;
+  font-style: italic;
+  cursor: pointer;
+  letter-spacing: 0.05em;
+  box-shadow: 0 6px 20px rgba(44,24,16,0.4), 0 0 0 1px rgba(212,160,23,0.4);
+  transition: transform 0.2s, box-shadow 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.btn-surprise::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(212,160,23,0.2), transparent);
+  opacity: 0; transition: opacity 0.3s;
+}
+.btn-surprise:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(44,24,16,0.5), 0 0 0 1px rgba(212,160,23,0.6); }
+.btn-surprise:hover::before { opacity: 1; }
+.btn-surprise:active { transform: translateY(0); }
+
+/* ── PAGE 2 ── */
+.declaration {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(0.95rem, 2.5vw, 1.1rem);
+  font-style: italic;
+  color: #3a2010;
+  line-height: 1.9;
+  margin-bottom: 24px;
+  text-align: left;
+  padding: 0 4px;
+}
+
+.declaration strong {
+  font-style: normal;
+  color: var(--brun);
+}
+
+.signature {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1rem;
+  color: var(--brun-m);
+  letter-spacing: 0.05em;
+  margin-top: 16px;
+}
+
+.stars {
+  font-size: 1.4rem;
+  letter-spacing: 0.2em;
+  margin-bottom: 16px;
+  opacity: 0.7;
+}
+
+/* ── COMPTEUR ── */
+.counter {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+.counter-block {
+  background: linear-gradient(135deg, var(--or), var(--or-m));
+  border-radius: 12px;
+  padding: 10px 18px;
+  min-width: 70px;
+}
+.counter-block .num {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: var(--brun);
+  display: block;
+  line-height: 1;
+}
+.counter-block .lbl {
+  font-size: 0.65rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--brun-m);
+}
+
+/* ── FLOATING STARS ── */
+.floating-star {
+  position: fixed;
+  font-size: 1.2rem;
+  pointer-events: none;
+  z-index: 5;
+  animation: floatUp 3s ease-out forwards;
+  opacity: 0;
+}
+@keyframes floatUp {
+  0%   { transform: translateY(0) rotate(0deg);   opacity: 1; }
+  100% { transform: translateY(-200px) rotate(360deg); opacity: 0; }
+}
+</style>
+</head>
+<body>
+
+<div class="bg-orbs">
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="orb orb3"></div>
+</div>
+
+<canvas id="confetti"></canvas>
+
+<!-- ══ PAGE 1 ══ -->
+<div class="page" id="page1">
+  <div class="card">
+    <img src="photo1.jpg" alt="Nous trois" class="card-photo" />
+    <div class="badge">✦ 1000 jours ✦</div>
+    <h1>Ça fait <em>1000 jours</em><br>qu'on est potes !</h1>
+    <p>Mille jours de fous rires, de galères partagées, de moments qui comptent. Tu veux savoir ce que j'ai à te dire ?</p>
+    <button class="btn-surprise" onclick="revealPage2()">✨ La surprise</button>
+  </div>
+</div>
+
+<!-- ══ PAGE 2 ══ -->
+<div class="page hidden" id="page2">
+  <div class="card">
+    <img src="photo2.jpg" alt="Maxence et moi" class="card-photo" />
+    <div class="stars">★ ★ ★</div>
+    <div class="counter">
+      <div class="counter-block">
+        <span class="num">1000</span>
+        <span class="lbl">Jours</span>
+      </div>
+      <div class="counter-block">
+        <span class="num" id="heures">24k</span>
+        <span class="lbl">Heures</span>
+      </div>
+      <div class="counter-block">
+        <span class="num">∞</span>
+        <span class="lbl">Souvenirs</span>
+      </div>
+    </div>
+    <p class="declaration">
+      Maxence,<br><br>
+      <strong>1000 jours.</strong> Mille putains de jours qu'on se supporte, et franchement… j'en voudrais mille de plus.<br><br>
+      T'es le genre d'ami qui est là dans les moments de merde autant que dans les meilleurs, celui avec qui les soirées banales deviennent des souvenirs qu'on raconte encore des années après.<br><br>
+      Merci d'être toi. Merci d'être là. <strong>Longue vie à notre amitié.</strong>
+    </p>
+    <div class="signature">— Avec toute mon amitié 🥂</div>
+  </div>
+</div>
+
+<script>
+function revealPage2() {
+  const p1 = document.getElementById('page1');
+  const p2 = document.getElementById('page2');
+  const canvas = document.getElementById('confetti');
+
+  /* launch floating stars */
+  for (let i = 0; i < 12; i++) {
+    setTimeout(() => spawnStar(), i * 120);
+  }
+
+  p1.classList.add('hidden');
+  setTimeout(() => {
+    p2.classList.remove('hidden');
+    startConfetti(canvas);
+  }, 600);
+}
+
+function spawnStar() {
+  const el = document.createElement('span');
+  el.className = 'floating-star';
+  el.textContent = ['⭐', '✨', '🎉', '🥂', '💛'][Math.floor(Math.random() * 5)];
+  el.style.left = Math.random() * 100 + 'vw';
+  el.style.top  = Math.random() * 60 + 20 + 'vh';
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 3200);
+}
+
+/* ── CONFETTI ── */
+function startConfetti(canvas) {
+  canvas.style.opacity = '1';
+  const ctx = canvas.getContext('2d');
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const COLORS = ['#D4A017','#F0C040','#5C3317','#FFF8E7','#c0392b','#2ecc71'];
+  const pieces = Array.from({ length: 120 }, () => ({
+    x: Math.random() * canvas.width,
+    y: -20 - Math.random() * 200,
+    r: 4 + Math.random() * 6,
+    d: 1.5 + Math.random() * 2.5,
+    color: COLORS[Math.floor(Math.random() * COLORS.length)],
+    tilt: Math.random() * 20 - 10,
+    tiltSpeed: 0.05 + Math.random() * 0.1,
+    angle: 0,
+  }));
+
+  let frame = 0;
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    pieces.forEach(p => {
+      p.angle += p.tiltSpeed;
+      p.y += p.d;
+      p.tilt = Math.sin(p.angle) * 15;
+      if (p.y > canvas.height + 20) {
+        p.y = -20;
+        p.x = Math.random() * canvas.width;
+      }
+      ctx.beginPath();
+      ctx.lineWidth = p.r;
+      ctx.strokeStyle = p.color;
+      ctx.moveTo(p.x + p.tilt + p.r / 2, p.y);
+      ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r / 2);
+      ctx.stroke();
+    });
+    frame++;
+    if (frame < 300) requestAnimationFrame(draw);
+    else {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      canvas.style.opacity = '0';
+    }
+  }
+  draw();
+}
+
+window.addEventListener('resize', () => {
+  const c = document.getElementById('confetti');
+  c.width = window.innerWidth;
+  c.height = window.innerHeight;
+});
+</script>
+</body>
+</html>
