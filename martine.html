@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Martine, l'aventure étudiante</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#222; display:flex; align-items:center; justify-content:center; height:100vh; font-family:'Comic Sans MS', 'Trebuchet MS', sans-serif; }
+  #game { position:relative; width:800px; height:600px; background:#87ceeb; overflow:hidden; border:4px solid #444; box-shadow:0 0 40px rgba(0,0,0,.6); }
+  canvas { display:block; image-rendering: pixelated; }
+  #dialogue {
+    position:absolute; left:0; right:0; bottom:0; min-height:110px;
+    background:rgba(20,20,40,0.92); color:#fff; padding:16px 20px;
+    font-size:18px; line-height:1.4; display:none;
+  }
+  #dialogue .name { color:#ffd166; font-weight:bold; margin-bottom:6px; }
+  #dialogue .hint { color:#aaa; font-size:13px; margin-top:8px; }
+  #overlay {
+    position:absolute; inset:0; background:#000; color:#fff;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; font-size:22px; padding:40px; gap:20px; z-index:50;
+  }
+  #overlay button {
+    font-size:18px; padding:10px 28px; cursor:pointer; border:none; border-radius:8px;
+    background:#ff6b9d; color:#fff;
+  }
+  #overlay h1 { color:#ffd166; }
+  .hidden { display:none !important; }
+  #minigame {
+    position:absolute; inset:0; background:rgba(0,0,0,.85); color:#fff;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; z-index:40;
+  }
+  #minigame .bar { width:400px; height:28px; background:#333; border-radius:14px; overflow:hidden; border:2px solid #fff; }
+  #minigame .fill { height:100%; width:0%; background:linear-gradient(90deg,#ff6b9d,#ffd166); transition:width .08s; }
+  #minigame button { font-size:24px; padding:16px 50px; border:none; border-radius:12px; background:#ff6b9d; color:#fff; cursor:pointer; }
+  #timer { font-size:16px; color:#ffd166; }
+</style>
+</head>
+<body>
+<div id="game">
+  <canvas id="canvas" width="800" height="600"></canvas>
+  <div id="dialogue">
+    <div class="name" id="dlgName"></div>
+    <div id="dlgText"></div>
+    <div class="hint">Appuie sur ESPACE pour continuer</div>
+  </div>
+  <div id="minigame" class="hidden">
+    <h2>Coupe le son de SimCity ! Martelle ESPACE !</h2>
+    <div class="bar"><div class="fill" id="fill"></div></div>
+    <div id="timer">Temps restant : 6.0s</div>
+  </div>
+  <div id="overlay">
+    <h1>Martine, l'aventure étudiante</h1>
+    <p>Chambéry, années 80. Martine s'ennuie ferme...<br>Utilise les flèches pour te déplacer, ESPACE pour parler / interagir.</p>
+    <button id="startBtn">Commencer</button>
+  </div>
+</div>
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const dialogueEl = document.getElementById('dialogue');
+const dlgName = document.getElementById('dlgName');
+const dlgText = document.getElementById('dlgText');
+const overlay = document.getElementById('overlay');
+const minigameEl = document.getElementById('minigame');
+const fillEl = document.getElementById('fill');
+const timerEl = document.getElementById('timer');
+
+// ---------- ÉTAT GLOBAL ----------
+let scene = 'chambery'; // chambery, grenoble_amphi, grenoble_out, minigame, end_good, end_bad
+let keys = {};
+let dialogueQueue = [];
+let inDialogue = false;
+let onDialogueEnd = null;
+let hasDiploma = false;
+let heartsAnim = 0; // frames remaining for heart animation
+let danceFrame = 0;
+
+// Martine
+const martine = {
+  x: 380, y: 450, w: 28, h: 40, speed: 3, dir: 'down', frame: 0
+};
+
+// ---------- INPUT ----------
+window.addEventListener('keydown', e => {
+  if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key)) e.preventDefault();
+  keys[e.key] = true;
+
+  if (e.key === ' ') {
+    if (inDialogue) advanceDialogue();
+    else if (scene === 'minigame') mashCount++;
+    else tryInteract();
+  }
+});
+window.addEventListener('keyup', e => { keys[e.key] = false; });
+
+document.getElementById('startBtn').addEventListener('click', () => {
+  overlay.classList.add('hidden');
+  startScene('chambery');
+});
+
+// ---------- DIALOGUE SYSTEM ----------
+function showDialogue(lines, name, callback) {
+  dialogueQueue = lines.slice();
+  inDialogue = true;
+  onDialogueEnd = callback || null;
+  dlgName.textContent = name || '';
+  dialogueEl.style.display = 'block';
+  nextLine();
+}
+function nextLine() {
+  if (dialogueQueue.length === 0) {
+    inDialogue = false;
+    dialogueEl.style.display = 'none';
+    if (onDialogueEnd) { const cb = onDialogueEnd; onDialogueEnd = null; cb(); }
+    return;
+  }
+  dlgText.textContent = dialogueQueue.shift();
+}
+function advanceDialogue() { nextLine(); }
+
+// ---------- SCENES ----------
+function startScene(name) {
+  scene = name;
+  martine.x = 380; martine.y = 450;
+  if (name === 'chambery') {
+    showDialogue([
+      "Encore une journée à traîner dans les rues de Chambéry...",
+      "Il n'y a vraiment pas grand chose à faire ici.",
+      "Peut-être que je devrais aller voir le directeur pour mon diplôme."
+    ], 'Martine');
+  }
+  if (name === 'grenoble_amphi') {
+    showDialogue([
+      "Me voilà à la fac d'économie et gestion de Grenoble !",
+      "L'amphithéâtre est immense, plein d'étudiants.",
+    ], 'Martine', () => {
+      showDialogue([
+        "Bienvenue à toutes et à tous en cette nouvelle année universitaire !",
+        "Travaillez dur, et surtout... amusez-vous un peu, la vie étudiante ne dure qu'un temps.",
+        "Sur ce, installez-vous, le cours va commencer."
+      ], 'Le Directeur', () => {
+        showDialogue(["Bon, sortons de cet amphi..."], 'Martine', () => {
+          startScene('grenoble_out');
+        });
+      });
+    });
+  }
+  if (name === 'grenoble_out') {
+    martine.x = 100; martine.y = 450;
+    showDialogue(["Ouf, ça fait du bien de sortir un peu."], 'Martine');
+  }
+}
+
+function tryInteract() {
+  if (scene === 'chambery') {
+    // directeur NPC at (560, 420)
+    if (dist(martine.x, martine.y, 560, 420) < 60) {
+      if (!hasDiploma) {
+        showDialogue([
+          "Ah, Martine ! J'ai justement ton diplôme ici.",
+          "Tiens, le voilà. Tu pourras partir étudier à Grenoble maintenant !"
+        ], 'Le Directeur', () => {
+          hasDiploma = true;
+          showDialogue(["Génial, j'ai mon diplôme ! Direction Grenoble !"], 'Martine', () => {
+            startScene('grenoble_amphi');
+          });
+        });
+      } else {
+        showDialogue(["Bonne route à Grenoble, Martine !"], 'Le Directeur');
+      }
+    }
+  } else if (scene === 'grenoble_out') {
+    // Titi at (560, 420)
+    if (dist(martine.x, martine.y, 560, 420) < 60 && heartsAnim === 0 && scene !== 'minigame') {
+      showDialogue([
+        "Oh ! ... Mais qui est-ce ?",
+        "Je crois bien que mon cœur vient de rater un battement..."
+      ], 'Martine', () => {
+        heartsAnim = 90;
+        setTimeout(() => {
+          showDialogue([
+            "Salut, je m'appelle Titi. Tu es nouvelle dans le coin ?",
+            "Désolé pour le bruit, je suis en plein milieu d'une partie de SimCity..."
+          ], 'Titi', () => {
+            startMinigame();
+          });
+        }, 1700);
+      });
+    }
+  }
+}
+
+function dist(x1,y1,x2,y2){ return Math.hypot(x1-x2, y1-y2); }
+
+// ---------- MINIGAME : couper le son de SimCity ----------
+let mashCount = 0;
+let minigameTime = 6.0;
+let minigameRunning = false;
+const MASH_TARGET = 24;
+
+function startMinigame() {
+  scene = 'minigame';
+  minigameEl.classList.remove('hidden');
+  mashCount = 0;
+  minigameTime = 6.0;
+  minigameRunning = true;
+  fillEl.style.width = '0%';
+}
+
+function updateMinigame(dt) {
+  if (!minigameRunning) return;
+  minigameTime -= dt;
+  timerEl.textContent = `Temps restant : ${Math.max(0, minigameTime).toFixed(1)}s`;
+  const pct = Math.min(100, (mashCount / MASH_TARGET) * 100);
+  fillEl.style.width = pct + '%';
+
+  if (mashCount >= MASH_TARGET) {
+    minigameRunning = false;
+    minigameEl.classList.add('hidden');
+    endGood();
+  } else if (minigameTime <= 0) {
+    minigameRunning = false;
+    minigameEl.classList.add('hidden');
+    endBad();
+  }
+}
+
+// ---------- FINS ----------
+function endGood() {
+  scene = 'end_good';
+  showDialogue([
+    "Phew, voilà, le son est coupé !",
+    "Merci ! Tu es plutôt sympa, toi...",
+    "Dis... ça te dirait de prendre un café un de ces jours ?"
+  ], 'Martine / Titi', () => {
+    showDialogue([
+      "*Martine et Titi se font un bisou sous le soleil de Grenoble*",
+      "Et c'est ainsi que commença la plus belle histoire de Martine.",
+      "FIN."
+    ], '✨', () => {});
+  });
+}
+function endBad() {
+  scene = 'end_bad';
+  showDialogue([
+    "Trop tard... Titi retourne à sa partie de SimCity sans un regard pour Martine.",
+    "Dépitée, Martine va noyer son chagrin au bar du coin.",
+  ], 'Martine', () => {
+    showDialogue([
+      "Allez Martine, viens danser, on va se changer les idées !"
+    ], 'Le BDE', () => {
+      showDialogue([
+        "*Martine danse toute la soirée avec son BDE, entourée de rires et de musique*",
+        "Ce n'était peut-être pas l'amour... mais une bonne soirée entre amis, c'est déjà pas mal.",
+        "FIN."
+      ], '🎶', () => {});
+    });
+  });
+}
+
+// ---------- UPDATE & MOVEMENT ----------
+function updateMartine() {
+  if (inDialogue || scene === 'minigame' || scene.startsWith('end')) return;
+  let moved = false;
+  if (keys['ArrowUp'])    { martine.y -= martine.speed; martine.dir='up'; moved=true; }
+  if (keys['ArrowDown'])  { martine.y += martine.speed; martine.dir='down'; moved=true; }
+  if (keys['ArrowLeft'])  { martine.x -= martine.speed; martine.dir='left'; moved=true; }
+  if (keys['ArrowRight']) { martine.x += martine.speed; martine.dir='right'; moved=true; }
+  martine.x = Math.max(20, Math.min(canvas.width-martine.w-20, martine.x));
+  martine.y = Math.max(180, Math.min(canvas.height-martine.h-20, martine.y));
+  if (moved) martine.frame += 0.2;
+}
+
+// ---------- DRAWING ----------
+function drawMartine() {
+  const x = martine.x, y = martine.y;
+  // shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.25)';
+  ctx.beginPath();
+  ctx.ellipse(x+martine.w/2, y+martine.h+4, 16, 5, 0, 0, Math.PI*2);
+  ctx.fill();
+
+  // legs (simple bounce)
+  const bounce = Math.sin(martine.frame*4) * 2;
+  // dress (red/white 80s style)
+  ctx.fillStyle = '#e63946';
+  ctx.fillRect(x, y+14, martine.w, 22);
+  // legs
+  ctx.fillStyle = '#fcd5b5';
+  ctx.fillRect(x+4, y+34+Math.max(0,bounce), 6, 8);
+  ctx.fillRect(x+martine.w-10, y+34-Math.min(0,bounce), 6, 8);
+  // shoes
+  ctx.fillStyle = '#333';
+  ctx.fillRect(x+3, y+42+Math.max(0,bounce), 8, 4);
+  ctx.fillRect(x+martine.w-11, y+42-Math.min(0,bounce), 8, 4);
+  // head
+  ctx.fillStyle = '#fcd5b5';
+  ctx.beginPath();
+  ctx.arc(x+martine.w/2, y+8, 11, 0, Math.PI*2);
+  ctx.fill();
+  // brown bob haircut
+  ctx.fillStyle = '#5b3a29';
+  ctx.beginPath();
+  ctx.arc(x+martine.w/2, y+5, 12, Math.PI, Math.PI*2);
+  ctx.fill();
+  ctx.fillRect(x+martine.w/2-12, y+2, 5, 14);
+  ctx.fillRect(x+martine.w/2+7, y+2, 5, 14);
+  ctx.fillRect(x+martine.w/2-12, y-6, 24, 8);
+  // face: eyes
+  if (heartsAnim > 0) {
+    ctx.fillStyle = '#ff4d6d';
+    drawHeart(x+martine.w/2-5, y+7, 4);
+    drawHeart(x+martine.w/2+5, y+7, 4);
+    heartsAnim--;
+  } else {
+    ctx.fillStyle = '#3e0020';
+    ctx.fillRect(x+martine.w/2-6, y+7, 2, 2);
+    ctx.fillRect(x+martine.w/2+4, y+7, 2, 2);
+  }
+}
+function drawHeart(cx, cy, size) {
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.beginPath();
+  ctx.moveTo(0, size*0.3);
+  ctx.bezierCurveTo(-size, -size*0.6, -size*1.6, size*0.5, 0, size*1.4);
+  ctx.bezierCurveTo(size*1.6, size*0.5, size, -size*0.6, 0, size*0.3);
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawNPC(x, y, label, color) {
+  ctx.fillStyle = 'rgba(0,0,0,0.25)';
+  ctx.beginPath();
+  ctx.ellipse(x+14, y+44, 16, 5, 0, 0, Math.PI*2);
+  ctx.fill();
+  ctx.fillStyle = color;
+  ctx.fillRect(x, y+14, 28, 22);
+  ctx.fillStyle = '#fcd5b5';
+  ctx.beginPath(); ctx.arc(x+14, y+8, 11, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#333';
+  ctx.fillRect(x+2, y-2, 24, 7); // hair/hat
+  ctx.fillStyle = '#3e0020';
+  ctx.fillRect(x+9, y+7, 2,2);
+  ctx.fillRect(x+17, y+7, 2,2);
+  ctx.fillStyle = '#fff';
+  ctx.font = '13px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(label, x+14, y-8);
+}
+
+function drawChambery() {
+  // sky
+  ctx.fillStyle = '#aee1f9';
+  ctx.fillRect(0,0,canvas.width,180);
+  // mountains
+  ctx.fillStyle = '#7a9e7e';
+  ctx.beginPath();
+  ctx.moveTo(0,180); ctx.lineTo(150,90); ctx.lineTo(320,180); ctx.closePath(); ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(280,180); ctx.lineTo(480,70); ctx.lineTo(650,180); ctx.closePath(); ctx.fill();
+  // street
+  ctx.fillStyle = '#9a9a9a';
+  ctx.fillRect(0,180,canvas.width,420);
+  ctx.strokeStyle = '#fff';
+  ctx.setLineDash([20,16]);
+  ctx.lineWidth = 4;
+  ctx.beginPath(); ctx.moveTo(0,400); ctx.lineTo(canvas.width,400); ctx.stroke();
+  ctx.setLineDash([]);
+  // buildings (80s pastel)
+  const colors = ['#f4a261','#e9c46a','#e76f51','#cdb4db'];
+  for (let i=0;i<5;i++) {
+    ctx.fillStyle = colors[i%colors.length];
+    ctx.fillRect(20+i*160, 200, 130, 130);
+    ctx.fillStyle = '#fff8';
+    for(let r=0;r<2;r++) for(let c=0;c<3;c++) ctx.fillRect(35+i*160+c*38, 215+r*45, 22, 26);
+  }
+  // sign for "Mairie de Chambéry" near directeur
+  ctx.fillStyle = '#264653';
+  ctx.font = 'bold 16px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('Mairie de Chambéry', 600, 360);
+  drawNPC(560, 420, 'Directeur', '#264653');
+}
+
+function drawAmphi() {
+  ctx.fillStyle = '#3a2e3f';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  // stage
+  ctx.fillStyle = '#5e4b5e';
+  ctx.fillRect(150, 80, 500, 140);
+  ctx.fillStyle = '#ffd166';
+  ctx.font = 'bold 20px sans-serif';
+  ctx.textAlign='center';
+  ctx.fillText("Faculté d'Économie et de Gestion — Grenoble", 400, 60);
+  drawNPC(385, 110, 'Le Directeur', '#073b4c');
+  // rows of seats with students
+  for (let r=0;r<4;r++) {
+    for (let c=0;c<9;c++) {
+      ctx.fillStyle = '#6b705c';
+      ctx.fillRect(60+c*80, 280+r*70, 50, 30);
+      ctx.fillStyle = '#fcd5b5';
+      ctx.beginPath(); ctx.arc(85+c*80, 270+r*70, 8, 0, Math.PI*2); ctx.fill();
+    }
+  }
+}
+
+function drawGrenobleOut() {
+  ctx.fillStyle = '#cdeafe';
+  ctx.fillRect(0,0,canvas.width,180);
+  ctx.fillStyle = '#9a9a9a';
+  ctx.fillRect(0,180,canvas.width,420);
+  // campus building
+  ctx.fillStyle = '#8d99ae';
+  ctx.fillRect(150, 190, 500, 150);
+  ctx.fillStyle = '#edf2f4';
+  for(let c=0;c<8;c++) ctx.fillRect(170+c*60, 210, 35, 50);
+  ctx.fillStyle = '#2b2d42';
+  ctx.font = 'bold 18px sans-serif';
+  ctx.textAlign='center';
+  ctx.fillText('Campus de Grenoble', 400, 175);
+  // trees
+  for (let i=0;i<3;i++) {
+    const tx = 60+i*330;
+    ctx.fillStyle = '#774936'; ctx.fillRect(tx, 360, 12, 40);
+    ctx.fillStyle = '#52b788'; ctx.beginPath(); ctx.arc(tx+6, 350, 28, 0, Math.PI*2); ctx.fill();
+  }
+  drawNPC(560, 420, 'Titi', '#118ab2');
+}
+
+function draw() {
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  if (scene === 'chambery') drawChambery();
+  else if (scene === 'grenoble_amphi') drawAmphi();
+  else if (scene === 'grenoble_out' || scene === 'minigame' || scene === 'end_good' || scene === 'end_bad') drawGrenobleOut();
+
+  if (scene !== 'grenoble_amphi') drawMartine();
+  else {
+    // seat Martine in the audience for the speech
+    const sx = martine.x, sy = martine.y;
+    martine.x = 400; martine.y = 460;
+    drawMartine();
+    martine.x = sx; martine.y = sy;
+  }
+}
+
+// ---------- MAIN LOOP ----------
+let lastTime = performance.now();
+function loop(now) {
+  const dt = (now - lastTime)/1000;
+  lastTime = now;
+  updateMartine();
+  if (scene === 'minigame') updateMinigame(dt);
+  draw();
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
