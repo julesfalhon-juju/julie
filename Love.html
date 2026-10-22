@@ -1,1 +1,790 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Love ❤️</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --card-w: min(86vw, 350px);
+      --card-h: min(132vw, 540px);
+    }
 
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body {
+      background: radial-gradient(circle at center, #2b1055 0%, #12072b 60%, #05010d 100%);
+      color: #fff;
+      font-family: 'Poppins', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .stars {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image: 
+        radial-gradient(2px 2px at 20px 30px, #fff, rgba(0,0,0,0)),
+        radial-gradient(2px 2px at 60px 120px, #ffd700, rgba(0,0,0,0)),
+        radial-gradient(1.5px 1.5px at 150px 60px, #ff69b4, rgba(0,0,0,0)),
+        radial-gradient(2px 2px at 220px 180px, #fff, rgba(0,0,0,0));
+      background-repeat: repeat;
+      background-size: 260px 260px;
+      opacity: 0.45;
+      z-index: 0;
+    }
+
+    .flash-overlay {
+      position: fixed;
+      inset: 0;
+      background: white;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 999;
+      transition: opacity 0.7s ease-out;
+    }
+
+    /* ================= ÉTAPE 1 : LE BOOSTER ================= */
+    #pack-screen {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      width: 100%;
+    }
+
+    .booster-pack {
+      width: var(--card-w);
+      height: var(--card-h);
+      position: relative;
+      cursor: pointer;
+      transform-style: preserve-3d;
+      animation: floatPack 3.5s ease-in-out infinite;
+      filter: drop-shadow(0 25px 45px rgba(255, 42, 133, 0.45));
+    }
+
+    @keyframes floatPack {
+      0%, 100% { transform: translateY(0px) rotate(-1deg); }
+      50% { transform: translateY(-14px) rotate(1.5deg); }
+    }
+
+    .pack-top {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 48px;
+      background: repeating-linear-gradient(90deg, #d4af37 0px, #fff3a1 6px, #aa8010 12px);
+      border-radius: 12px 12px 0 0;
+      border-bottom: 3px dashed rgba(255,255,255,0.7);
+      z-index: 3;
+      transform-origin: top right;
+      transition: transform 0.65s cubic-bezier(0.5, 0, 0.2, 1), opacity 0.55s ease;
+    }
+
+    .pack-body {
+      position: absolute;
+      top: 46px; bottom: 0; left: 0; right: 0;
+      background: linear-gradient(135deg, #ff1e56 0%, #7b1fa2 50%, #1f0c3d 100%);
+      border-radius: 0 0 18px 18px;
+      border: 4px solid #f9d976;
+      border-top: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      text-align: center;
+      overflow: hidden;
+      box-shadow: inset 0 0 35px rgba(255, 215, 0, 0.45);
+      transition: transform 0.6s ease, opacity 0.6s ease;
+    }
+
+    .pack-body::before {
+      content: '';
+      position: absolute;
+      inset: -120%;
+      background: linear-gradient(45deg, transparent 40%, rgba(255,255,255,0.45) 50%, transparent 60%);
+      animation: packShine 3.2s infinite;
+    }
+
+    @keyframes packShine {
+      0% { transform: translateX(-60%) translateY(-60%); }
+      100% { transform: translateX(60%) translateY(60%); }
+    }
+
+    .pack-logo-circle {
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #fff3a1, #d4af37);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3.4rem;
+      margin-bottom: 18px;
+      box-shadow: 0 0 25px rgba(255,215,0,0.8);
+      border: 3px solid #fff;
+    }
+
+    .pack-title {
+      font-family: 'Cinzel', serif;
+      font-size: 1.9rem;
+      font-weight: 900;
+      color: #fff;
+      text-shadow: 0 3px 12px rgba(0,0,0,0.7), 0 0 15px #ffd700;
+      margin-bottom: 10px;
+      letter-spacing: 1px;
+    }
+
+    .pack-subtitle {
+      font-size: 0.9rem;
+      background: rgba(0,0,0,0.55);
+      padding: 6px 16px;
+      border-radius: 20px;
+      border: 1px solid #ffd700;
+      color: #ffeb99;
+      font-weight: 600;
+    }
+
+    .pack-Footer {
+      position: absolute;
+      bottom: 14px;
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.75);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+
+    .booster-pack.ripping .pack-top {
+      transform: translateY(-90px) rotate(28deg) scale(0.9);
+      opacity: 0;
+    }
+
+    .booster-pack.ripping .pack-body {
+      transform: scale(1.12);
+      opacity: 0;
+    }
+
+    .tap-hint {
+      margin-top: 26px;
+      font-size: 1rem;
+      color: #ffeb99;
+      font-weight: 600;
+      animation: pulseHint 1.5s infinite;
+      text-align: center;
+    }
+
+    @keyframes pulseHint {
+      0%, 100% { opacity: 0.5; transform: scale(0.98); }
+      50% { opacity: 1; transform: scale(1.04); }
+    }
+
+    /* ================= ÉTAPE 2 : LA PILE DE CARTES ================= */
+    #cards-screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      width: 100%;
+      z-index: 10;
+      padding: 15px;
+    }
+
+    .counter-badge {
+      margin-bottom: 14px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #ffdf80;
+      background: rgba(255,255,255,0.1);
+      padding: 6px 20px;
+      border-radius: 30px;
+      border: 1px solid rgba(255,215,0,0.4);
+      backdrop-filter: blur(6px);
+    }
+
+    .deck-area {
+      position: relative;
+      width: var(--card-w);
+      height: var(--card-h);
+      perspective: 1200px;
+    }
+
+    .poke-card {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 18px;
+      padding: 11px;
+      background: linear-gradient(135deg, #ffe066 0%, #d4af37 50%, #996515 100%);
+      box-shadow: 0 18px 40px rgba(0,0,0,0.75);
+      cursor: pointer;
+      transform-style: preserve-3d;
+      transition: transform 0.12s ease-out, opacity 0.45s ease;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .poke-card.ultra-rare {
+      background: linear-gradient(135deg, #ff007f, #ffae00, #00ffcc, #7a00ff, #ff007f);
+      background-size: 300% 300%;
+      animation: rainbowBorder 4s ease infinite;
+      box-shadow: 0 0 35px rgba(255, 215, 0, 0.75);
+    }
+
+    @keyframes rainbowBorder {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .card-inner {
+      background: linear-gradient(180deg, #241734 0%, #12091c 100%);
+      border-radius: 11px;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      padding: 9px 11px;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+      padding: 0 2px;
+    }
+
+    .card-title {
+      font-family: 'Cinzel', serif;
+      font-size: 1.05rem;
+      font-weight: 900;
+      color: #fff;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.6);
+    }
+
+    .card-hp {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #ff4d79;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .card-image-box {
+      width: 100%;
+      height: 55%;
+      border-radius: 7px;
+      border: 3px solid #d4af37;
+      overflow: hidden;
+      position: relative;
+      background: #09040e;
+      box-shadow: inset 0 0 12px rgba(0,0,0,0.8);
+      flex-shrink: 0;
+    }
+
+    .card-image-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      display: block;
+      pointer-events: none;
+    }
+
+    .card-banner {
+      background: linear-gradient(90deg, #b8860b, #fff3a1, #b8860b);
+      color: #1f0c3d;
+      font-size: 0.66rem;
+      font-weight: 800;
+      text-align: center;
+      padding: 2.5px 8px;
+      border-radius: 4px;
+      margin: 6px 0;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+    }
+
+    .card-desc-box {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 215, 0, 0.28);
+      border-radius: 7px;
+      padding: 8px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow-y: auto;
+    }
+
+    .card-desc {
+      font-size: 0.78rem;
+      line-height: 1.38;
+      color: #f7f2ff;
+      text-align: center;
+      font-weight: 400;
+    }
+
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 6px;
+      font-size: 0.68rem;
+      color: #d4af37;
+      font-weight: 700;
+      padding: 0 2px;
+    }
+
+    .holo-glare {
+      position: absolute;
+      inset: 0;
+      border-radius: 18px;
+      pointer-events: none;
+      background: radial-gradient(
+        circle at var(--glare-x, 50%) var(--glare-y, 50%),
+        rgba(255, 255, 255, 0.55) 0%,
+        rgba(255, 192, 203, 0.25) 25%,
+        rgba(138, 43, 226, 0.2) 50%,
+        transparent 75%
+      );
+      mix-blend-mode: overlay;
+      opacity: 0;
+      transition: opacity 0.25s;
+      z-index: 5;
+    }
+
+    .poke-card:hover .holo-glare,
+    .poke-card.touching .holo-glare {
+      opacity: 1;
+    }
+
+    .poke-card.swiped {
+      transform: translateX(150%) translateY(-40px) rotate(28deg) !important;
+      opacity: 0 !important;
+      pointer-events: none;
+      transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s ease !important;
+    }
+
+    /* ================= ÉTAPE 3 : COLLECTION FINALE ================= */
+    #binder-screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      max-width: 1250px;
+      padding: 40px 20px 60px;
+      z-index: 10;
+    }
+
+    .binder-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .binder-header h1 {
+      font-family: 'Cinzel', serif;
+      font-size: 2rem;
+      color: #ffdf80;
+      text-shadow: 0 2px 12px rgba(255, 215, 0, 0.5);
+      margin-bottom: 8px;
+    }
+
+    .binder-header p {
+      color: #d8c8ff;
+      font-size: 0.95rem;
+    }
+
+    .binder-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(235px, 1fr));
+      gap: 24px;
+      width: 100%;
+      justify-items: center;
+    }
+
+    .binder-grid .poke-card {
+      position: relative;
+      width: 235px;
+      height: 365px;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .binder-grid .poke-card:hover {
+      transform: translateY(-8px) scale(1.03);
+      box-shadow: 0 20px 35px rgba(255, 105, 180, 0.4);
+    }
+
+    .binder-grid .card-title { font-size: 0.82rem; }
+    .binder-grid .card-hp { font-size: 0.7rem; }
+    .binder-grid .card-banner { font-size: 0.55rem; margin: 4px 0; }
+    .binder-grid .card-desc { font-size: 0.62rem; line-height: 1.25; }
+
+    .btn-reopen {
+      margin-top: 40px;
+      padding: 13px 30px;
+      border-radius: 30px;
+      border: 2px solid #ffd700;
+      background: linear-gradient(135deg, #ff1e56, #7b1fa2);
+      color: white;
+      font-family: 'Poppins', sans-serif;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      box-shadow: 0 8px 25px rgba(255, 30, 86, 0.5);
+      transition: transform 0.2s;
+    }
+
+    .btn-reopen:hover {
+      transform: scale(1.06);
+    }
+
+    #zoom-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(5, 1, 13, 0.88);
+      backdrop-filter: blur(8px);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      flex-direction: column;
+    }
+
+    #zoom-container {
+      width: var(--card-w);
+      height: var(--card-h);
+      position: relative;
+      perspective: 1200px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="stars"></div>
+  <div class="flash-overlay" id="flash"></div>
+
+  <!-- ÉCRAN 1 : LE BOOSTER SCELLÉ -->
+  <div id="pack-screen">
+    <div class="booster-pack" id="booster" onclick="openBooster()">
+      <div class="pack-top"></div>
+      <div class="pack-body">
+        <div class="pack-logo-circle">❤️</div>
+        <div class="pack-title">LOVE</div>
+        <div class="pack-subtitle">Édition Première Année</div>
+        <div class="pack-Footer">Booster de 15 Cartes Souvenirs</div>
+      </div>
+    </div>
+    <div class="tap-hint">✨ Touche le booster pour le déchirer ✨</div>
+  </div>
+
+  <!-- ÉCRAN 2 : DÉBALLAGE CARTE PAR CARTE -->
+  <div id="cards-screen">
+    <div class="counter-badge" id="card-counter">Carte 1 / 15</div>
+    <div class="deck-area" id="deck-area"></div>
+    <div class="tap-hint" id="card-hint">👆 Touche la carte pour révéler la suivante</div>
+  </div>
+
+  <!-- ÉCRAN 3 : ALBUM / COLLECTION COMPLÈTE -->
+  <div id="binder-screen">
+    <div class="binder-header">
+      <h1>✨ Notre Collection Complète ✨</h1>
+      <p>Clique sur n'importe quelle carte pour l'inspecter de près en 3D</p>
+    </div>
+    <div class="binder-grid" id="binder-grid"></div>
+    <button class="btn-reopen" onclick="location.reload()">🔄 Réouvrir le Booster</button>
+  </div>
+
+  <!-- MODAL DE ZOOM -->
+  <div id="zoom-modal" onclick="closeZoom(event)">
+    <div id="zoom-container"></div>
+    <div class="tap-hint" style="margin-top: 18px;">Touche en dehors de la carte pour fermer</div>
+  </div>
+
+  <script>
+    const cardsData = [
+      {
+        title: "Septembre 2025",
+        img: "Septembre 2025.jpg",
+        banner: "N° 01/15 • Première Rencontre",
+        rarity: "★ Commune",
+        text: "On se rencontre VRAIMENT, tu me fais rire et je te fais rire, tu es magnifique, je veux en savoir plus."
+      },
+      {
+        title: "Octobre 2025",
+        img: "Octobre 2025.jpg",
+        banner: "N° 02/15 • Le Feeling & Le Crush",
+        rarity: "★ Commune",
+        text: "On commence à beaucoup parler, tu me touches et je sens un super feeling en plus de ta beauté, je développe un crush."
+      },
+      {
+        title: "Novembre 2025",
+        img: "Novembre 2025.jpg",
+        banner: "N° 03/15 • Premier Baiser",
+        rarity: "★★ Peu Commune",
+        text: "Après un long mois et demi sans se voir mais à s'appeler et vraiment apprendre à se connaître, on s'embrasse pour la première fois, je vis un rêve."
+      },
+      {
+        title: "Décembre 2025",
+        img: "Decembre 2025.jpg",
+        banner: "N° 04/15 • Officiellement en Couple",
+        rarity: "★★★ Rare",
+        text: "On est en couple, c'est magique, on regarde Bambi et The Notebook ensemble, je te vois pleurer car tu es émotive, on s'enfuit chacun aux Amériques."
+      },
+      {
+        title: "Janvier 2026",
+        img: "Janvier 2026.JPG",
+        banner: "N° 05/15 • Neige & Plaid M&M's",
+        rarity: "★★★ Rare",
+        text: "Je prends un train un lundi grâce à la neige, et on fait une semaine entière chez toi, tu es déçue de ma réaction à ton cadeau (le plaid M&M's) mais sache qu'il compte énormément pour moi et que je dors chaque soir avec."
+      },
+      {
+        title: "Février 2026",
+        img: "Février 2026.jpg",
+        banner: "N° 06/15 • Cadenas à Montmartre",
+        rarity: "★★★ Rare",
+        text: "Tu viens à Paris et on scelle notre amour à Montmartre (POV : je n'ai pas retrouvé le cadenas)."
+      },
+      {
+        title: "Mars 2026",
+        img: "Mars 2026.jpg",
+        banner: "N° 07/15 • Semaine à Grenoble",
+        rarity: "★★★★ Holo Rare",
+        text: "Je suis chez toi, je découvre ta ville, tu nous fais la surprise du match et on se voit toute la semaine à Grenoble, je t'aime plus que tout."
+      },
+      {
+        title: "Avril 2026",
+        img: "Avril 2026.JPG",
+        banner: "N° 08/15 • Fou Rire au Resto",
+        rarity: "★★★★ Holo Rare",
+        text: "Encore une belle semaine à Grenoble avec un film plus que moyen et un restaurant où je te crache de l'eau dessus, mais qu'est-ce que je t'aime."
+      },
+      {
+        title: "Mai 2026",
+        img: "Mai 2026.JPG",
+        banner: "N° 09/15 • Mon Anniversaire & Sweetly",
+        rarity: "★★★★ Holo Rare",
+        text: "Tu me rends visite pour mon anniversaire avec des supers cadeaux que je mets tous les jours à la salle et on va se recueillir sur la tombe de Napoléon sous de belles lumières et on se voit encore une semaine chez toi à Sweetly pour de belles nuits torrides (gnocchis cordon bleu au lit)."
+      },
+      {
+        title: "Juin 2026",
+        img: "Juin 2026.jpg",
+        banner: "N° 10/15 • Ton Anniversaire BB",
+        rarity: "★★★★ Holo Rare",
+        text: "TON ANNIVERSAIRE BB ! Dernière semaine de cours de notre vie !"
+      },
+      {
+        title: "Juillet 2026",
+        img: "Juillet 2026.jpg",
+        banner: "N° 11/15 • Malta & Le Roi Lion",
+        rarity: "★★★★★ Ultra Rare",
+        text: "MALTAAAA ! On passe de beaux moments même si tu étais malade et qu'on a dû sauver la vie d'une famille entière. Tu reviens à Paris voir le Roi LIOOOOON et manger une glace avec 1000kg de chocolat dessus."
+      },
+      {
+        title: "Août 2026",
+        img: "Aout 2026.JPG",
+        banner: "N° 12/15 • Paradis à Sanary",
+        rarity: "★★★★★ Ultra Rare",
+        text: "Sanaryyyyy enfin ! 10 jours de rêve (sans l'anu incident), je suis au paradis de l'amour avec toi, on déconnecte et on passe du temps de qualité ensemble à regarder les animaux de la SPA. Je vis un rêve à tes côtés."
+      },
+      {
+        title: "Septembre 2026",
+        img: "Septembre 2026.JPG",
+        banner: "N° 13/15 • Rentrée à Marseille",
+        rarity: "★★★★★ Ultra Rare",
+        text: "Je passe te voir à Marseille 2 fois et je suis fier de ta rentrée, sport, travail et amies, tu gères parfaitement tout ce que tu entreprends. On passe une très belle soirée à sortir faire la fête et faire un after dans mon AirBnB."
+      },
+      {
+        title: "Octobre 2026",
+        img: "Octobre 2026.jpg",
+        banner: "N° 14/15 • Retrouvailles",
+        rarity: "★★★★★ Ultra Rare",
+        text: "Je suis toujours au chômage lol, tu viens me voir grâce à ton déplacement et tu retrouves toutes tes béantes ! Je t'aime toujours plus chaque jour."
+      },
+      {
+        title: "Avenir",
+        img: "Avenir.jpg",
+        banner: "N° 15/15 • Carte Secrète Infinie",
+        rarity: "👑 SECRÈTE GOLD",
+        ultra: true,
+        text: "Je ne sais pas ce que l'avenir nous réserve si ce n'est de magnifiques moments, je t'aime de tout mon coeur ma chiri ❤️ ! J'ai tellement hâte de te revoir, de fêter notre première année ensemble et de préparer toutes les suivantes à tes côtés."
+      }
+    ];
+
+    let currentIndex = 0;
+
+    function createCardElement(data, index, isInteractiveDeck = true) {
+      const card = document.createElement('div');
+      card.className = 'poke-card' + (data.ultra ? ' ultra-rare' : '');
+      if (isInteractiveDeck) {
+        card.style.zIndex = cardsData.length - index;
+        const randomAngle = index === 0 ? 0 : (Math.random() * 4 - 2).toFixed(2);
+        card.dataset.angle = randomAngle;
+        card.style.transform = `rotate(${randomAngle}deg)`;
+      }
+
+      card.innerHTML = `
+        <div class="holo-glare"></div>
+        <div class="card-inner">
+          <div class="card-header">
+            <div class="card-title">${data.title}</div>
+            <div class="card-hp">❤️ ∞ PV</div>
+          </div>
+          <div class="card-image-box">
+            <img src="${encodeURI(data.img)}" alt="${data.title}">
+          </div>
+          <div class="card-banner">${data.banner}</div>
+          <div class="card-desc-box">
+            <p class="card-desc">${data.text}</p>
+          </div>
+          <div class="card-footer">
+            <span>${data.rarity}</span>
+            <span>2025 - 2026 ❤️</span>
+          </div>
+        </div>
+      `;
+
+      addTiltEffect(card);
+      return card;
+    }
+
+    function addTiltEffect(card) {
+      const handleMove = (clientX, clientY) => {
+        const rect = card.getBoundingClientRect();
+        const x = clientX - rect.left;
+        const y = clientY - rect.top;
+        const percentX = x / rect.width;
+        const percentY = y / rect.height;
+
+        const rotateY = (percentX - 0.5) * 26;
+        const rotateX = (0.5 - percentY) * 26;
+
+        card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.03)`;
+        card.style.setProperty('--glare-x', `${percentX * 100}%`);
+        card.style.setProperty('--glare-y', `${percentY * 100}%`);
+      };
+
+      card.addEventListener('mousemove', (e) => handleMove(e.clientX, e.clientY));
+      card.addEventListener('mouseleave', () => {
+        const baseAngle = card.dataset.angle || 0;
+        card.style.transform = `rotate(${baseAngle}deg) scale(1)`;
+      });
+
+      card.addEventListener('touchmove', (e) => {
+        if (e.touches.length > 0) {
+          card.classList.add('touching');
+          handleMove(e.touches[0].clientX, e.touches[0].clientY);
+        }
+      }, { passive: true });
+
+      card.addEventListener('touchend', () => {
+        card.classList.remove('touching');
+        const baseAngle = card.dataset.angle || 0;
+        card.style.transform = `rotate(${baseAngle}deg) scale(1)`;
+      });
+    }
+
+    function openBooster() {
+      const booster = document.getElementById('booster');
+      const flash = document.getElementById('flash');
+      if (booster.classList.contains('ripping')) return;
+
+      booster.classList.add('ripping');
+      setTimeout(() => { flash.style.opacity = '1'; }, 320);
+
+      setTimeout(() => {
+        document.getElementById('pack-screen').style.display = 'none';
+        const cardsScreen = document.getElementById('cards-screen');
+        cardsScreen.style.display = 'flex';
+        buildDeck();
+        setTimeout(() => { flash.style.opacity = '0'; }, 100);
+      }, 680);
+    }
+
+    function buildDeck() {
+      const deckArea = document.getElementById('deck-area');
+      deckArea.innerHTML = '';
+
+      cardsData.forEach((data, idx) => {
+        const cardEl = createCardElement(data, idx, true);
+        cardEl.addEventListener('click', () => swipeTopCard(cardEl, idx));
+        deckArea.appendChild(cardEl);
+      });
+    }
+
+    function swipeTopCard(cardEl, idx) {
+      if (idx !== currentIndex) return;
+
+      cardEl.classList.add('swiped');
+      currentIndex++;
+
+      if (currentIndex < cardsData.length) {
+        document.getElementById('card-counter').textContent = `Carte ${currentIndex + 1} / ${cardsData.length}`;
+        const nextCard = document.getElementById('deck-area').children[currentIndex];
+        if (nextCard) {
+          nextCard.dataset.angle = 0;
+          nextCard.style.transform = 'rotate(0deg)';
+        }
+        if (currentIndex === cardsData.length - 1) {
+          document.getElementById('card-hint').textContent = "✨ Dernière carte secrète ! Touche-la pour voir l'album complet ✨";
+        }
+      } else {
+        setTimeout(showBinderScreen, 550);
+      }
+    }
+
+    function showBinderScreen() {
+      document.getElementById('cards-screen').style.display = 'none';
+      const binderScreen = document.getElementById('binder-screen');
+      const binderGrid = document.getElementById('binder-grid');
+      binderScreen.style.display = 'flex';
+      binderGrid.innerHTML = '';
+
+      cardsData.forEach((data, idx) => {
+        const cardEl = createCardElement(data, idx, false);
+        cardEl.addEventListener('click', () => openZoom(data));
+        binderGrid.appendChild(cardEl);
+      });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function openZoom(data) {
+      const modal = document.getElementById('zoom-modal');
+      const container = document.getElementById('zoom-container');
+      container.innerHTML = '';
+      const zoomedCard = createCardElement(data, 0, false);
+      container.appendChild(zoomedCard);
+      modal.style.display = 'flex';
+    }
+
+    function closeZoom(e) {
+      if (e.target.id === 'zoom-modal') {
+        document.getElementById('zoom-modal').style.display = 'none';
+      }
+    }
+  </script>
+</body>
+</html>
